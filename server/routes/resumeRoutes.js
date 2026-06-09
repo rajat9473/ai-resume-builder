@@ -9,7 +9,7 @@ const Resume = require("../models/Resume");
 const router = express.Router();
 
 const upload = multer({
-  dest: "uploads/"
+  dest: "uploads/",
 });
 
 router.post("/upload", upload.single("resume"), async (req, res) => {
@@ -17,7 +17,7 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "No file uploaded"
+        message: "No file uploaded",
       });
     }
 
@@ -26,7 +26,6 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
 
     const resumeText = pdfData.text;
 
-    // AI Analysis
     let aiAnalysis = "AI analysis unavailable";
 
     try {
@@ -54,7 +53,7 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
       "AWS",
       "Kubernetes",
       "REST API",
-      "TypeScript"
+      "TypeScript",
     ];
 
     const detectedSkills = skills.filter((skill) =>
@@ -65,24 +64,52 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
       (skill) => !detectedSkills.includes(skill)
     );
 
-    let atsScore = 50;
+    // ==========================
+    // ATS SCORE
+    // ==========================
 
-    atsScore += detectedSkills.length * 3;
+    let atsScore = 0;
 
-    if (resumeText.includes("Project")) atsScore += 5;
-    if (resumeText.includes("Experience")) atsScore += 5;
-    if (resumeText.includes("GitHub")) atsScore += 5;
-    if (resumeText.includes("LinkedIn")) atsScore += 5;
+    // Skills = 50 marks
+    const skillScore =
+      (detectedSkills.length / skills.length) * 50;
 
-    if (atsScore > 100) atsScore = 100;
+    atsScore += skillScore;
+
+    // Important Sections
+    if (/projects?/i.test(resumeText)) atsScore += 10;
+    if (/experience/i.test(resumeText)) atsScore += 10;
+    if (/education/i.test(resumeText)) atsScore += 10;
+    if (/skills?/i.test(resumeText)) atsScore += 5;
+
+    // Links
+    if (/github/i.test(resumeText)) atsScore += 5;
+    if (/linkedin/i.test(resumeText)) atsScore += 5;
+
+    // Resume Length
+    if (resumeText.length > 1500) atsScore += 5;
+
+    // Penalties
+    if (detectedSkills.length < 4) atsScore -= 15;
+    if (!/projects?/i.test(resumeText)) atsScore -= 5;
+    if (!/experience/i.test(resumeText)) atsScore -= 5;
+
+    atsScore = Math.round(atsScore);
+
+    if (atsScore > 92) atsScore = 92;
+    if (atsScore < 25) atsScore = 25;
+
+    // ==========================
+    // Suggestions
+    // ==========================
 
     const suggestions = [];
 
-    if (!resumeText.includes("GitHub")) {
+    if (!/github/i.test(resumeText)) {
       suggestions.push("Add GitHub profile link");
     }
 
-    if (!resumeText.includes("LinkedIn")) {
+    if (!/linkedin/i.test(resumeText)) {
       suggestions.push("Add LinkedIn profile link");
     }
 
@@ -98,17 +125,26 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
       suggestions.push("Learn and mention TypeScript");
     }
 
-    const summary =
-      "Software Developer with experience in Java, Python, Web Development, APIs and Full Stack technologies.";
+    if (!/experience/i.test(resumeText)) {
+      suggestions.push("Add experience section");
+    }
 
-    // SAVE TO MONGODB
+    if (!/projects?/i.test(resumeText)) {
+      suggestions.push("Add project details");
+    }
+
+    const summary =
+      aiAnalysis && aiAnalysis.length > 0
+        ? aiAnalysis.substring(0, 250)
+        : "Resume analyzed successfully.";
+
     const savedResume = await Resume.create({
       atsScore,
       summary,
       skills: detectedSkills,
       missingSkills: missingSkills.slice(0, 8),
       suggestions,
-      resumeText
+      resumeText,
     });
 
     res.json({
@@ -120,30 +156,29 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
       suggestions,
       aiAnalysis,
       text: resumeText,
-      resumeId: savedResume._id
+      resumeId: savedResume._id,
     });
-
   } catch (error) {
     console.error("ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 });
 
-// GET HISTORY
 router.get("/history", async (req, res) => {
   try {
-    const history = await Resume.find()
-      .sort({ createdAt: -1 });
+    const history = await Resume.find().sort({
+      createdAt: -1,
+    });
 
     res.json(history);
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 });

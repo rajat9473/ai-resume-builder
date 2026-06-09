@@ -1,8 +1,24 @@
+
 import { useState } from "react";
 import axios from "axios";
 
+import Hero from "./components/Hero";
+import UploadCard from "./components/UploadCard";
+import ATSCard from "./components/ATSCard";
+import SkillsCard from "./components/SkillsCard";
+import AnalysisCard from "./components/AnalysisCard";
+import HistoryCard from "./components/HistoryCard";
+
+interface HistoryItem {
+  _id: string;
+  atsScore: number;
+  summary: string;
+  createdAt: string;
+}
+
 function App() {
   const [file, setFile] = useState<File | null>(null);
+
   const [resumeText, setResumeText] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [missingSkills, setMissingSkills] = useState<string[]>([]);
@@ -11,14 +27,18 @@ function App() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [aiAnalysis, setAiAnalysis] = useState("");
 
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   const uploadResume = async () => {
     if (!file) {
       alert("Please select a PDF");
       return;
     }
+
+    setLoading(true);
 
     const formData = new FormData();
     formData.append("resume", file);
@@ -29,16 +49,18 @@ function App() {
         formData
       );
 
-      setResumeText(res.data.text);
-      setSkills(res.data.skills);
-      setMissingSkills(res.data.missingSkills);
-      setSummary(res.data.summary);
-      setAtsScore(res.data.atsScore);
-      setSuggestions(res.data.suggestions);
-      setAiAnalysis(res.data.aiAnalysis || "No AI analysis available");
+      setResumeText(res.data.text || "");
+      setSkills(res.data.skills || []);
+      setMissingSkills(res.data.missingSkills || []);
+      setSummary(res.data.summary || "");
+      setAtsScore(res.data.atsScore || 0);
+      setSuggestions(res.data.suggestions || []);
+      setAiAnalysis(res.data.aiAnalysis || "");
     } catch (error) {
       console.error(error);
       alert("Analysis Failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,7 +70,7 @@ function App() {
         "http://localhost:5000/api/resume/history"
       );
 
-      setHistory(res.data);
+      setHistory(res.data || []);
       setShowHistory(true);
     } catch (error) {
       console.error(error);
@@ -57,162 +79,146 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
 
-        <h1 className="text-5xl font-bold text-center mb-8">
-          AI Resume Builder & Analyzer
-        </h1>
+      <div className="w-full max-w-[1700px] mx-auto px-10 lg:px-16 py-8">
 
-        <div className="flex flex-col items-center gap-4 mb-8">
+        <Hero />
 
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={(e) => {
-              if (e.target.files) {
-                setFile(e.target.files[0]);
-              }
-            }}
-            className="border p-2 rounded"
+        <div className="max-w-6xl mx-auto mb-10">
+          <UploadCard
+            onFileChange={setFile}
+            onAnalyze={uploadResume}
+            onHistory={fetchHistory}
+            loading={loading}
+            selectedFileName={file?.name}
+          />
+        </div>
+
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mb-10">
+
+          <ATSCard score={atsScore} />
+
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl hover:scale-105 hover:shadow-cyan-500/20 transition-all duration-300">
+            <h3 className="text-slate-400 mb-2">
+              Detected Skills
+            </h3>
+
+            <div className="text-6xl font-black text-cyan-400">
+              {skills.length}
+            </div>
+
+            <p className="text-slate-500 mt-3">
+              Skills Found
+            </p>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl hover:scale-105 hover:shadow-red-500/20 transition-all duration-300">
+            <h3 className="text-slate-400 mb-2">
+              Missing Skills
+            </h3>
+
+            <div className="text-6xl font-black text-red-400">
+              {missingSkills.length}
+            </div>
+
+            <p className="text-slate-500 mt-3">
+              Skills To Improve
+            </p>
+          </div>
+
+        </div>
+
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-10 shadow-xl max-w-6xl mx-auto">
+
+          <h2 className="text-2xl font-bold mb-4 text-cyan-400">
+            Professional Summary
+          </h2>
+
+          <p className="text-slate-300 leading-relaxed text-lg">
+            {summary}
+          </p>
+
+        </div>
+
+        <AnalysisCard aiAnalysis={aiAnalysis} />
+
+        <div className="grid lg:grid-cols-2 gap-8 mb-10">
+
+          <SkillsCard
+            title="Detected Skills"
+            skills={skills}
+            positive={true}
           />
 
-          <div className="flex gap-4">
-            <button
-              onClick={uploadResume}
-              className="bg-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-700"
-            >
-              Analyze Resume
-            </button>
-
-            <button
-              onClick={fetchHistory}
-              className="bg-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-700"
-            >
-              View History
-            </button>
-          </div>
+          <SkillsCard
+            title="Missing Skills"
+            skills={missingSkills}
+            positive={false}
+          />
 
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-10 shadow-xl">
 
-          <div className="bg-slate-800 p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-bold mb-3">
-              ATS Score
-            </h2>
-
-            <div className="text-5xl font-bold text-green-400">
-              {atsScore}
-            </div>
-          </div>
-
-          <div className="bg-slate-800 p-6 rounded-xl shadow-lg md:col-span-2">
-            <h2 className="text-xl font-bold mb-3">
-              Professional Summary
-            </h2>
-
-            <p>{summary}</p>
-          </div>
-
-        </div>
-
-        <div className="bg-slate-800 p-6 rounded-xl shadow-lg mb-8">
-          <h2 className="text-xl font-bold mb-4">
-            AI Analysis
+          <h2 className="text-3xl font-bold text-yellow-400 mb-6">
+            💡 AI Suggestions
           </h2>
 
-          <div className="whitespace-pre-wrap text-gray-200">
-            {aiAnalysis}
-          </div>
-        </div>
+          <div className="grid gap-4">
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-
-          <div className="bg-slate-800 p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-bold mb-4">
-              Detected Skills
-            </h2>
-
-            <ul className="space-y-2">
-              {skills.map((skill, index) => (
-                <li key={index}>✅ {skill}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="bg-slate-800 p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-bold mb-4">
-              Missing Skills
-            </h2>
-
-            <ul className="space-y-2">
-              {missingSkills.map((skill, index) => (
-                <li key={index}>❌ {skill}</li>
-              ))}
-            </ul>
-          </div>
-
-        </div>
-
-        <div className="bg-slate-800 p-6 rounded-xl shadow-lg mb-8">
-          <h2 className="text-xl font-bold mb-4">
-            Suggestions
-          </h2>
-
-          <ul className="space-y-2">
             {suggestions.map((item, index) => (
-              <li key={index}>• {item}</li>
+              <div
+                key={index}
+                className="
+                  bg-slate-900/70
+                  border
+                  border-slate-700
+                  rounded-2xl
+                  p-5
+                  hover:border-yellow-500
+                  hover:translate-x-2
+                  transition-all
+                "
+              >
+                {item}
+              </div>
             ))}
-          </ul>
+
+          </div>
+
         </div>
 
         {showHistory && (
-          <div className="bg-slate-800 p-6 rounded-xl shadow-lg mb-8">
-
-            <h2 className="text-2xl font-bold mb-6">
-              Resume Analysis History
-            </h2>
-
-            <div className="grid md:grid-cols-2 gap-4">
-
-              {history.map((item) => (
-                <div
-                  key={item._id}
-                  className="bg-slate-900 p-4 rounded-lg border border-slate-700"
-                >
-                  <h3 className="font-bold text-green-400 mb-2">
-                    ATS Score: {item.atsScore}
-                  </h3>
-
-                  <p className="mb-2">
-                    {item.summary}
-                  </p>
-
-                  <p className="text-sm text-gray-400">
-                    {new Date(item.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-
-            </div>
-
-          </div>
+          <HistoryCard history={history} />
         )}
 
-        <div className="bg-slate-800 p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-bold mb-4">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-xl">
+
+          <h2 className="text-2xl font-bold mb-4 text-purple-400">
             Extracted Resume Text
           </h2>
 
-          <textarea
-            value={resumeText}
-            readOnly
-            className="w-full h-96 bg-slate-900 p-4 rounded"
-          />
+          <div
+            className="
+              h-96
+              overflow-y-auto
+              bg-slate-900
+              border
+              border-slate-700
+              rounded-xl
+              p-4
+              text-slate-300
+              whitespace-pre-wrap
+            "
+          >
+            {resumeText || "Upload a resume to view extracted text"}
+          </div>
+
         </div>
 
       </div>
+
     </div>
   );
 }
