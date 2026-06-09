@@ -2,7 +2,9 @@ const express = require("express");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const fs = require("fs");
+
 const analyzeResumeWithAI = require("../services/aiService");
+const Resume = require("../models/Resume");
 
 const router = express.Router();
 
@@ -25,7 +27,13 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
     const resumeText = pdfData.text;
 
     // AI Analysis
-    const aiAnalysis = await analyzeResumeWithAI(resumeText);
+    let aiAnalysis = "AI analysis unavailable";
+
+    try {
+      aiAnalysis = await analyzeResumeWithAI(resumeText);
+    } catch (err) {
+      console.log("AI ERROR:", err.message);
+    }
 
     const skills = [
       "Java",
@@ -93,6 +101,16 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
     const summary =
       "Software Developer with experience in Java, Python, Web Development, APIs and Full Stack technologies.";
 
+    // SAVE TO MONGODB
+    const savedResume = await Resume.create({
+      atsScore,
+      summary,
+      skills: detectedSkills,
+      missingSkills: missingSkills.slice(0, 8),
+      suggestions,
+      resumeText
+    });
+
     res.json({
       success: true,
       atsScore,
@@ -101,12 +119,28 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
       missingSkills: missingSkills.slice(0, 8),
       suggestions,
       aiAnalysis,
-      text: resumeText
+      text: resumeText,
+      resumeId: savedResume._id
     });
 
   } catch (error) {
     console.error("ERROR:", error);
 
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// GET HISTORY
+router.get("/history", async (req, res) => {
+  try {
+    const history = await Resume.find()
+      .sort({ createdAt: -1 });
+
+    res.json(history);
+  } catch (error) {
     res.status(500).json({
       success: false,
       message: error.message

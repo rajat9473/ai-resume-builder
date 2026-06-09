@@ -2,14 +2,21 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+const connectDB = require("./config/db");
+
 const resumeRoutes = require("./routes/resumeRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
+
+// MongoDB Connection
+connectDB();
 
 app.use(cors());
 app.use(express.json());
 
-// Resume Routes
+// Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 
 // Test Route
