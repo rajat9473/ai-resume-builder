@@ -9,7 +9,7 @@ function Register() {
   const registerUser = async () => {
     try {
       await axios.post(
-        "http://localhost:5000/api/auth/register",
+        "https://ai-resume-builder-hmxo.onrender.com/api/auth/register",
         {
           name,
           email,
