@@ -1,56 +1,177 @@
-# AI Resume Builder & Analyzer
+# 🚀 AI Resume Builder & Analyzer
 
-A full-stack AI-powered Resume Analyzer built using React, TypeScript, Node.js and Express.
+An AI-powered Resume Analysis Platform that helps users evaluate and improve their resumes through ATS scoring, AI-generated insights, skill gap analysis, and resume history tracking.
 
-## Features
+---
 
-* Resume PDF Upload
-* Resume Text Extraction
-* ATS Score Calculation
-* Skill Detection
-* Missing Skills Analysis
-* Resume Improvement Suggestions
-* AI Analysis Module
-* Responsive Dashboard UI
+## 📌 Features
 
-## Tech Stack
+### 📄 Resume Upload
+- Upload resumes in PDF format
+- Extracts resume text automatically
+
+### 🎯 ATS Score Analysis
+- Calculates ATS compatibility score
+- Highlights resume strengths and weaknesses
+
+### 🤖 AI Resume Analysis
+- AI-generated feedback and recommendations
+- Professional resume improvement suggestions
+
+### 🧠 Skill Gap Detection
+- Detects existing technical skills
+- Identifies missing skills for better job matching
+
+### 📜 Analysis History
+- Stores previous resume analyses
+- View ATS scores and summaries anytime
+
+### 🔐 Authentication
+- User Registration
+- User Login
+- JWT-based Authentication
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-
-* React
-* TypeScript
-* Tailwind CSS
-* Axios
+- React.js
+- TypeScript
+- Vite
+- Tailwind CSS
+- Axios
+- React Circular Progressbar
 
 ### Backend
+- Node.js
+- Express.js
+- Multer
+- PDF-Parse
+- JWT Authentication
 
-* Node.js
-* Express.js
-* Multer
-* PDF-Parse
+### Database
+- MongoDB Atlas
+- Mongoose
 
-### Tools
+### AI Integration
+- Gemini API
 
-* Git
-* GitHub
+### Deployment
+- Vercel
+- Render
+- MongoDB Atlas
 
-## Project Structure
+---
 
+## 📂 Project Structure
+
+```bash
 ai-resume-builder/
-
+│
 ├── client/
-
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
 ├── server/
+│   ├── routes/
+│   ├── models/
+│   ├── config/
+│   ├── services/
+│   └── package.json
+│
+└── README.md
+```
 
-## Future Enhancements
+---
 
-* MongoDB Integration
-* User Authentication (JWT)
-* Resume Builder Templates
-* PDF Report Generation
-* Gemini/OpenAI Integration
-* Deployment on Vercel & Render
+## ⚙️ Installation
 
-## Author
+### Clone Repository
 
-Rajat Chitransh
+```bash
+git clone <repository-url>
+
+cd ai-resume-builder
+```
+
+### Frontend Setup
+
+```bash
+cd client
+
+npm install
+
+npm run dev
+```
+
+### Backend Setup
+
+```bash
+cd server
+
+npm install
+
+npm start
+```
+
+---
+
+## 🔑 Environment Variables
+
+Create a `.env` file inside the server folder.
+
+```env
+PORT=5000
+
+MONGODB_URI=your_mongodb_connection_string
+
+JWT_SECRET=your_jwt_secret
+
+GEMINI_API_KEY=your_api_key
+```
+
+---
+
+## 📸 Screenshots
+
+### Home Page
+(Add Screenshot)
+
+### Resume Upload
+(Add Screenshot)
+
+### ATS Score Analysis
+(Add Screenshot)
+
+### AI Analysis
+(Add Screenshot)
+
+### History Dashboard
+(Add Screenshot)
+
+---
+
+## 🚀 Future Enhancements
+
+- Resume Template Generator
+- Job Description Matching
+- Resume Download as PDF
+- Recruiter Dashboard
+- Advanced ATS Scoring Engine
+- Multi-Resume Comparison
+
+---
+
+## 👨‍💻 Author
+
+**Rajat Chitransh**
+
+Full Stack Developer
+
+---
+
+## ⭐ Support
+
+If you found this project useful, consider giving it a star on GitHub.
