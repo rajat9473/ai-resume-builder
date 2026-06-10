@@ -136,20 +136,9 @@ GEMINI_API_KEY=your_api_key
 
 ## 📸 Screenshots
 
-### Home Page
-(Add Screenshot)
+<img width="1637" height="896" alt="image" src="https://github.com/user-attachments/assets/4b2f4011-4b17-4c1d-8aeb-49a5a54ed5af" />
+<img width="1907" height="907" alt="image" src="https://github.com/user-attachments/assets/108cae99-ec05-434e-9077-4be28f96d305" />
 
-### Resume Upload
-(Add Screenshot)
-
-### ATS Score Analysis
-(Add Screenshot)
-
-### AI Analysis
-(Add Screenshot)
-
-### History Dashboard
-(Add Screenshot)
 
 ---
 
